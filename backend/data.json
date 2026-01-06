@@ -1,0 +1,62 @@
+{
+  "books": [
+    {
+      "id": 1,
+      "name": "Java",
+      "stock": 5,
+      "initialStock": 5,
+      "deleted": false
+    },
+    {
+      "id": 2,
+      "name": "Linux",
+      "stock": 3,
+      "initialStock": 3,
+      "deleted": false
+    },
+    {
+      "id": 3,
+      "name": "API Testing",
+      "stock": 2,
+      "initialStock": 2,
+      "deleted": false
+    },
+    {
+      "id": 4,
+      "name": "Selenium",
+      "stock": 4,
+      "initialStock": 4,
+      "deleted": false
+    },
+    {
+      "id": 5,
+      "name": "Selenium",
+      "stock": 4,
+      "initialStock": 4,
+      "deleted": false
+    },
+    {
+      "id": 6,
+      "name": "Selenium",
+      "stock": 4,
+      "initialStock": 4,
+      "deleted": false
+    },
+    {
+      "id": 7,
+      "name": "Selenium",
+      "stock": 4,
+      "initialStock": 4,
+      "deleted": false
+    },
+    {
+      "id": 8,
+      "name": "Selenium",
+      "stock": 4,
+      "initialStock": 4,
+      "deleted": false
+    }
+  ],
+  "orders": [],
+  "audit": []
+}

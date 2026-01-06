@@ -1,0 +1,415 @@
+{
+	"info": {
+		"_postman_id": "03bf4693-6597-4135-b738-904ed10b22d1",
+		"name": "QA Bookstore api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48499207",
+		"_collection_link": "https://aka198jha-784571.postman.co/workspace/a3fbcd4a-a16b-4b0b-964a-d5aa7ed99d2e/collection/48499207-03bf4693-6597-4135-b738-904ed10b22d1?action=share&source=collection_link&creator=48499207"
+	},
+	"item": [
+		{
+			"name": "api key",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"qa\",\r\n  \"password\": \"test\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}/auth",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add books",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Selenium\",\r\n  \"stock\": 4\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}/books",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"books"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "books",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}/books",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"books"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create order",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bookId\": 2\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}/orders",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "orders",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bookId\": 1\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{baseurl}}/orders",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete orders",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bookId\": 1\r\n}\r\n"
+				},
+				"url": {
+					"raw": "http://localhost:3000/orders/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reset database",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bookId\": 1\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{baseurl}}/reset",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit logs",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}/audit",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"audit"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"/// Always attach API key if present\r",
+					"// Attach API key if available\r",
+					"const apiKey = pm.environment.get(\"apiKey\");\r",
+					"if (apiKey) {\r",
+					"    pm.request.headers.upsert({\r",
+					"        key: \"x-api-key\",\r",
+					"        value: apiKey\r",
+					"    });\r",
+					"}\r",
+					"\r",
+					"// Attach JWT token if available\r",
+					"const token = pm.environment.get(\"token\");\r",
+					"if (token) {\r",
+					"    pm.request.headers.upsert({\r",
+					"        key: \"Authorization\",\r",
+					"        value: \"Bearer \" + token\r",
+					"    });\r",
+					"}\r",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"// ================= BASIC HEALTH =================\r",
+					"pm.test(\"No server crash (no 5xx)\", function () {\r",
+					"    pm.expect(pm.response.code).to.be.below(500);\r",
+					"});\r",
+					"\r",
+					"pm.test(\"Response time < 2 seconds\", function () {\r",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+					"});\r",
+					"\r",
+					"pm.test(\"Response is JSON\", function () {\r",
+					"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+					"});\r",
+					"\r",
+					"// ================= SAFE JSON PARSE =================\r",
+					"let json = {};\r",
+					"try {\r",
+					"    json = pm.response.json();\r",
+					"} catch (e) {\r",
+					"    pm.test(\"Invalid JSON response\", () => {\r",
+					"        throw new Error(\"Response is not valid JSON\");\r",
+					"    });\r",
+					"}\r",
+					"\r",
+					"// ================= AUTH HANDLING =================\r",
+					"if (pm.request.url.toString().includes(\"/auth\")) {\r",
+					"    if (pm.response.code === 200) {\r",
+					"        pm.test(\"Login returns API Key\", () => pm.expect(json).to.have.property(\"apiKey\"));\r",
+					"        pm.test(\"Login returns JWT Token\", () => pm.expect(json).to.have.property(\"token\"));\r",
+					"\r",
+					"        pm.environment.set(\"apiKey\", json.apiKey);\r",
+					"        pm.environment.set(\"token\", json.token);\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 401) {\r",
+					"        pm.test(\"Invalid credentials blocked\", () => {\r",
+					"            pm.expect(json.message).to.include(\"Invalid\");\r",
+					"        });\r",
+					"    }\r",
+					"}\r",
+					"\r",
+					"// ================= SECURITY =================\r",
+					"if (pm.response.code === 401 || pm.response.code === 403) {\r",
+					"    pm.test(\"Security error contains message\", () => {\r",
+					"        pm.expect(json).to.have.property(\"message\");\r",
+					"    });\r",
+					"}\r",
+					"\r",
+					"// ================= BOOKS VALIDATION =================\r",
+					"if (pm.request.url.toString().includes(\"/books\") && pm.request.method === \"GET\") {\r",
+					"    pm.test(\"Books is an array\", () => pm.expect(json).to.be.an(\"array\"));\r",
+					"\r",
+					"    json.forEach(b => {\r",
+					"        pm.test(\"Book object is valid\", () => {\r",
+					"            pm.expect(b).to.have.property(\"id\");\r",
+					"            pm.expect(b).to.have.property(\"name\");\r",
+					"            pm.expect(b).to.have.property(\"stock\");\r",
+					"            pm.expect(b.stock).to.be.a(\"number\");\r",
+					"        });\r",
+					"\r",
+					"        pm.test(\"Stock is never negative\", () => {\r",
+					"            pm.expect(b.stock).to.be.at.least(0);\r",
+					"        });\r",
+					"    });\r",
+					"}\r",
+					"\r",
+					"// ================= ADD BOOK NEGATIVES =================\r",
+					"if (pm.request.url.toString().includes(\"/books\") && pm.request.method === \"POST\") {\r",
+					"    if (pm.response.code === 401) {\r",
+					"        pm.test(\"Add book blocked without API key\", () => true);\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 403) {\r",
+					"        pm.test(\"Add book blocked for invalid token\", () => true);\r",
+					"    }\r",
+					"}\r",
+					"\r",
+					"// ================= ORDER NEGATIVES =================\r",
+					"if (pm.request.url.toString().includes(\"/orders\") && pm.request.method === \"POST\") {\r",
+					"    if (pm.response.code === 404) {\r",
+					"        pm.test(\"Invalid bookId rejected\", () => {\r",
+					"            pm.expect(json.message).to.include(\"not found\");\r",
+					"        });\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 400) {\r",
+					"        pm.test(\"Out of stock blocked\", () => {\r",
+					"            pm.expect(json.message).to.include(\"stock\");\r",
+					"        });\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 401 || pm.response.code === 403) {\r",
+					"        pm.test(\"Order blocked due to auth failure\", () => true);\r",
+					"    }\r",
+					"}\r",
+					"\r",
+					"// ================= ORDERS VALIDATION =================\r",
+					"if (pm.request.url.toString().includes(\"/orders\") && pm.request.method === \"GET\" && pm.response.code === 200) {\r",
+					"    pm.test(\"Orders is an array\", () => pm.expect(json).to.be.an(\"array\"));\r",
+					"\r",
+					"    json.forEach(o => {\r",
+					"        pm.test(\"Order structure is valid\", () => {\r",
+					"            pm.expect(o).to.have.property(\"id\");\r",
+					"            pm.expect(o).to.have.property(\"bookName\");\r",
+					"        });\r",
+					"    });\r",
+					"}\r",
+					"\r",
+					"// ================= DELETE ORDER NEGATIVES =================\r",
+					"if (pm.request.method === \"DELETE\") {\r",
+					"    if (pm.response.code === 404) {\r",
+					"        pm.test(\"Invalid order id rejected\", () => {\r",
+					"            pm.expect(json.message).to.include(\"not found\");\r",
+					"        });\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 401 || pm.response.code === 403) {\r",
+					"        pm.test(\"Delete blocked for unauthorized user\", () => true);\r",
+					"    }\r",
+					"}\r",
+					"\r",
+					"// ================= RESET =================\r",
+					"if (pm.request.url.toString().includes(\"/reset\")) {\r",
+					"    if (pm.response.code === 200) {\r",
+					"        pm.test(\"Reset executed successfully\", () => {\r",
+					"            pm.expect(json.message).to.match(/reset/i);\r",
+					"        });\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 401 || pm.response.code === 403) {\r",
+					"        pm.test(\"Reset blocked for non-admin\", () => true);\r",
+					"    }\r",
+					"}\r",
+					"\r",
+					"// ================= AUDIT =================\r",
+					"if (pm.request.url.toString().includes(\"/audit\")) {\r",
+					"    if (pm.response.code === 200) {\r",
+					"        pm.test(\"Audit is an array\", () => pm.expect(json).to.be.an(\"array\"));\r",
+					"\r",
+					"        json.forEach(l => {\r",
+					"            pm.test(\"Audit entry valid\", () => {\r",
+					"                pm.expect(l).to.have.property(\"time\");\r",
+					"                pm.expect(l).to.have.property(\"action\");\r",
+					"            });\r",
+					"        });\r",
+					"    }\r",
+					"\r",
+					"    if (pm.response.code === 401 || pm.response.code === 403) {\r",
+					"        pm.test(\"Audit blocked without permission\", () => true);\r",
+					"    }\r",
+					"}\r",
+					"\r",
+					"// ================= DATA INTEGRITY =================\r",
+					"pm.test(\"Response body is not empty\", () => {\r",
+					"    pm.expect(pm.response.text()).to.not.be.empty;\r",
+					"});\r",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseurl",
+			"value": ""
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "apikey",
+			"value": ""
+		}
+	]
+}

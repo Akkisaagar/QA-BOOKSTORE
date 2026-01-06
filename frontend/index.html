@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QA BookStore</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>📚 QA BookStore</h1>
+  <p>Secure API Testing Web App</p>
+</header>
+
+<div class="container">
+
+  <section class="card">
+    <h2>Available Books</h2>
+    <div id="books" class="book-list"></div>
+  </section>
+
+  <section class="card">
+    <h2>Order a Book</h2>
+    <input type="number" id="bookId" placeholder="Enter Book ID">
+    <button onclick="orderBook()">Order</button>
+    <p id="orderStatus"></p>
+  </section>
+
+  <section class="card">
+  <h2>Orders</h2>
+  <ul id="orders"></ul>
+  <button onclick="resetDB()">Reset Database</button>
+</section>
+
+
+</div>
+
+<footer>
+  <p>Built by Akash – Manual & API Testing Portfolio</p>
+</footer>
+
+<script src="app.js"></script>
+<div id="toast"></div>
+</body>
+</html>
+
