@@ -1,37 +1,51 @@
 const express = require("express");
-const cors = require("cors");
-const fs = require("fs");
+const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
-
-const SECRET = "QA_SUPER_SECRET";
-const API_KEY = "Akki@123";
+const bodyParser = require("body-parser");
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// ================= AUTH MIDDLEWARE =================
+/* ================= DATABASE ================= */
+
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "akash",
+  password: "Akashjha",
+  database: "qa_bookstore"
+});
+
+db.connect(err => {
+  if (err) {
+    console.error("❌ DB Connection Failed:", err);
+    process.exit(1);
+  }
+  console.log("✅ MySQL Connected");
+});
+
+/* ================= CONFIG ================= */
+
+const JWT_SECRET = "qa-bookstore-secret";
+const API_KEY = "QA-BOOKSTORE-KEY";
+
+/* ================= MIDDLEWARE ================= */
+
 function apiKeyAuth(req, res, next) {
-  const apiKey = req.headers["x-api-key"];
-  if (apiKey !== API_KEY) {
-    return res.status(401).json({ message: "Invalid API Key" });
+  if (req.headers["x-api-key"] !== API_KEY) {
+    return res.status(403).json({ message: "Invalid API key" });
   }
   next();
 }
 
 function tokenAuth(req, res, next) {
-  const header = req.headers["authorization"];
-  if (!header) return res.status(403).json({ message: "Token missing" });
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Token missing" });
 
-  const token = header.split(" ")[1];
-
-  try {
-    const decoded = jwt.verify(token, SECRET);
-    req.user = decoded;
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+    req.user = user;
     next();
-  } catch {
-    return res.status(403).json({ message: "Invalid or expired token" });
-  }
+  });
 }
 
 function adminOnly(req, res, next) {
@@ -41,196 +55,184 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// ================= DATA =================
-const DATA_FILE = "./data.json";
-
-function readData() {
-  return JSON.parse(fs.readFileSync(DATA_FILE));
-}
-
-function writeData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
+/* ================= UTIL ================= */
 
 function logAction(action) {
-    const data = readData()
-
-    if (!data.logs) {
-        data.logs = []
-    }
-
-    data.logs.push({
-        ...action,
-        time: new Date().toISOString()
-    })
-
-    writeData(data)
+  db.query("INSERT INTO audit_logs (action) VALUES (?)", [action]);
 }
 
+/* ================= AUTH ================= */
 
-// ================= AUTH API =================
 app.post("/auth", (req, res) => {
-  const { username, password } = req.body;
+  const { username } = req.body;
 
-  if (username === "qa" && password === "test") {
-    const token = jwt.sign(
-      { user: "qa", role: "admin" },
-      SECRET,
-      { expiresIn: "15m" }
-    );
+  // default admin user
+  const role = "admin";
 
-    return res.json({
-      apiKey: API_KEY,
-      token: token
-    });
-  }
+  const token = jwt.sign(
+    { username, role },
+    JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 
-  res.status(401).json({ message: "Invalid credentials" });
+  res.json({
+    apiKey: API_KEY,
+    token
+  });
 });
 
-// ================= PUBLIC APIs =================
-app.get("/books", (req, res) => {
-  const data = readData();
-  res.json(data.books.filter(b => !b.deleted));
+
+/* ================= BOOKS ================= */
+
+// ✅ GET BOOKS (ONLY ACTIVE)
+app.get("/books", apiKeyAuth, tokenAuth, (req, res) => {
+  db.query(
+    "SELECT * FROM books WHERE deleted = false",
+    (err, results) => {
+      if (err) return res.status(500).json(err);
+      res.json(results);
+    }
+  );
 });
 
-app.get("/health", (req, res) => {
-  res.json({ status: "UP" });
-});
-
-// ================= PROTECTED APIs =================
-
-// Add book (Admin)
+// ➕ ADD BOOK (ADMIN)
 app.post("/books", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const data = readData();
+  const { name, stock } = req.body;
 
-  const newBook = {
-    id: data.books.length + 1,
-    name: req.body.name,
-    stock: req.body.stock,
-    initialStock: req.body.stock,
-    deleted: false
-  };
+  db.query(
+    "INSERT INTO books (name, stock, deleted) VALUES (?, ?, false)",
+    [name, stock],
+    err => {
+      if (err) return res.status(500).json(err);
 
-  data.books.push(newBook);
-  logAction("Book added: " + newBook.name);
-  writeData(data);
-
-  res.status(201).json(newBook);
+      logAction(`Book added: ${name}`);
+      res.status(201).json({ message: "Book added" });
+    }
+  );
 });
 
-// Create order
-app.post("/orders", apiKeyAuth, tokenAuth, (req, res) => {
-  const data = readData();
-
-  if (!req.body || !req.body.bookId) {
-    return res.status(400).json({ message: "bookId is required" });
-  }
-
-  const book = data.books.find(b => b.id == req.body.bookId && !b.deleted);
-
-  if (!book) return res.status(404).json({ message: "Book not found" });
-  if (book.stock <= 0) return res.status(400).json({ message: "Out of stock" });
-
-  book.stock--;
-
-  const order = {
-    id: data.orders.length + 1,
-    bookId: book.id,
-    bookName: book.name
-  };
-
-  data.orders.push(order);
-  logAction("Order created for: " + book.name);
-  writeData(data);
-
-  res.status(201).json(order);
-});
-
-// Get orders
-app.get("/orders", apiKeyAuth, tokenAuth, (req, res) => {
-  const data = readData();
-  res.json(data.orders);
-});
-
-// Delete order (Admin)
-app.delete("/orders/:id", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const data = readData();
-  const index = data.orders.findIndex(o => o.id == req.params.id);
-
-  if (index === -1) return res.status(404).json({ message: "Order not found" });
-
-  const removed = data.orders[index];
-  data.orders.splice(index, 1);
-  logAction("Order deleted: " + removed.bookName);
-  writeData(data);
-
-  res.json({ message: "Order deleted" });
-});
-
-// Soft delete book
+// 🗑️ SOFT DELETE BOOK
 app.delete("/books/:id", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const data = readData();
-  const book = data.books.find(b => b.id == req.params.id);
+  db.query(
+    "UPDATE books SET deleted = true WHERE id = ?",
+    [req.params.id],
+    err => {
+      if (err) return res.status(500).json(err);
 
-  if (!book) return res.status(404).json({ message: "Book not found" });
-
-  book.deleted = true;
-  logAction("Book soft deleted: " + book.name);
-  writeData(data);
-
-  res.json({ message: "Book soft deleted" });
+      logAction(`Book soft deleted: ${req.params.id}`);
+      res.json({ message: "Book soft deleted" });
+    }
+  );
 });
 
-// Logged-in user
+/* ================= ORDERS ================= */
+
+// 📦 GET ORDERS
+app.get("/orders", apiKeyAuth, tokenAuth, (req, res) => {
+  db.query("SELECT * FROM orders", (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  });
+});
+
+// 🛒 CREATE ORDER (STOCK ↓ IN MYSQL)
+app.post("/orders", apiKeyAuth, tokenAuth, (req, res) => {
+  const { bookId } = req.body;
+
+  db.query(
+    "SELECT * FROM books WHERE id=? AND deleted=false",
+    [bookId],
+    (err, results) => {
+      if (err) return res.status(500).json(err);
+      if (results.length === 0)
+        return res.status(404).json({ message: "Book not found" });
+
+      const book = results[0];
+
+      if (book.stock <= 0)
+        return res.status(400).json({ message: "Out of stock" });
+
+      // Insert order
+      db.query(
+        "INSERT INTO orders (bookName) VALUES (?)",
+        [book.name],
+        err => {
+          if (err) return res.status(500).json(err);
+
+          // 🔥 UPDATE STOCK IN MYSQL
+          db.query(
+            "UPDATE books SET stock = stock - 1 WHERE id=?",
+            [bookId]
+          );
+
+          logAction(`Order placed for ${book.name}`);
+          res.status(201).json({ message: "Order placed" });
+        }
+      );
+    }
+  );
+});
+
+// ❌ DELETE ORDER (ADMIN)
+app.delete("/orders/:id", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
+  db.query(
+    "DELETE FROM orders WHERE id = ?",
+    [req.params.id],
+    err => {
+      if (err) return res.status(500).json(err);
+
+      logAction(`Order deleted: ${req.params.id}`);
+      res.json({ message: "Order deleted" });
+    }
+  );
+});
+
+/* ================= RESET DATABASE ================= */
+
+app.post("/reset", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
+  const books = [
+    ["Java", 10],
+    ["Manual Testing", 8],
+    ["Linux", 6],
+    ["Python", 7],
+    ["SQL", 5]
+  ];
+
+  db.query("DELETE FROM orders");
+  db.query("DELETE FROM books");
+
+  db.query(
+    "INSERT INTO books (name, stock, deleted) VALUES ?",
+    [books],
+    err => {
+      if (err) return res.status(500).json(err);
+
+      logAction("Database reset");
+      res.json({ message: "Database reset successfully" });
+    }
+  );
+});
+
+/* ================= AUDIT ================= */
+
+app.get("/audit", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
+  db.query(
+    "SELECT * FROM audit_logs ORDER BY id DESC",
+    (err, results) => {
+      if (err) return res.status(500).json(err);
+      res.json(results);
+    }
+  );
+});
+
+/* ================= USER ================= */
+
 app.get("/me", apiKeyAuth, tokenAuth, (req, res) => {
   res.json(req.user);
 });
 
-// Smart Reset (Preserve books)
-app.post("/reset", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const data = readData();
+/* ================= START ================= */
 
-  data.books.forEach(b => {
-    if (!b.deleted) {
-      b.stock = b.initialStock;
-    }
-  });
-
-  data.orders = [];
-  logAction("System reset executed");
-  writeData(data);
-
-  res.json({ message: "Database reset (Books preserved)" });
+app.listen(3000, () => {
+  console.log("🚀 Server running on http://localhost:3000");
 });
-
-// Audit logs
-app.get("/audit", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const data = readData();
-  res.json(data.audit);
-});
-
-// CSV Import (JSON array)
-app.post("/import", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const data = readData();
-  const rows = req.body;
-
-  rows.forEach(r => {
-    data.books.push({
-      id: data.books.length + 1,
-      name: r.name,
-      stock: parseInt(r.stock),
-      initialStock: parseInt(r.stock),
-      deleted: false
-    });
-  });
-
-  logAction("CSV import executed");
-  writeData(data);
-
-  res.json({ message: "Books imported successfully" });
-});
-
-// ================= START =================
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
-

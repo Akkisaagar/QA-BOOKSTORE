@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Java",
-      "stock": 5,
+      "stock": 4,
       "initialStock": 5,
       "deleted": false
     },
@@ -55,8 +55,21 @@
       "stock": 4,
       "initialStock": 4,
       "deleted": false
+    },
+    {
+      "id": 9,
+      "name": "Selenium",
+      "stock": 4,
+      "initialStock": 4,
+      "deleted": false
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": 1,
+      "bookId": 1,
+      "bookName": "Java"
+    }
+  ],
   "audit": []
 }
