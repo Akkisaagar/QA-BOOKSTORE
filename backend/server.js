@@ -2,8 +2,15 @@ const express = require("express");
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const app = express();
+app.use(cors({
+  origin: [
+    "https://akashjha.site",
+    "https://www.akashjha.site"
+  ]
+}));
 app.use(bodyParser.json());
 
 /* ================= DATABASE ================= */
@@ -26,7 +33,7 @@ db.connect(err => {
 /* ================= CONFIG ================= */
 
 const JWT_SECRET = "qa-bookstore-secret";
-const API_KEY = "QA-BOOKSTORE-KEY";
+const API_KEY = "Akki@123";
 
 /* ================= MIDDLEWARE ================= */
 
@@ -232,7 +239,8 @@ app.get("/me", apiKeyAuth, tokenAuth, (req, res) => {
 });
 
 /* ================= START ================= */
+const PORT = process.env.PORT || 3000;
 
-app.listen(3000, () => {
-  console.log("🚀 Server running on http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
