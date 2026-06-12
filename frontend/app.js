@@ -127,8 +127,9 @@ async function resetDB() {
 
 /* ================= AUTO LOGIN ================= */
 async function autoLogin() {
+  console.log("AUTO LOGIN STARTED");
   try {
-    console.log("AUTO LOGIN STARTED");
+    
     const res = await fetch(API + "/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
