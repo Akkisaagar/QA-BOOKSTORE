@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors({
   origin: [
     "https://akashjha.site",
@@ -197,12 +198,13 @@ app.delete("/orders/:id", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
 /* ================= RESET DATABASE ================= */
 
 app.post("/reset", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
-  const books = [
-    ["Java", 10],
-    ["Manual Testing", 8],
-    ["Linux", 6],
-    ["Python", 7],
-    ["SQL", 5]
+ const books = [
+  ["Java", 10, false],
+  ["Manual Testing", 8, false],
+  ["Linux", 6, false],
+  ["Python", 7, false],
+  ["SQL", 5, false]
+
   ];
 
   db.query("DELETE FROM orders");
