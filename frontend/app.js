@@ -133,11 +133,13 @@ async function resetDB() {
 /* ================= AUTO LOGIN ================= */
 async function autoLogin() {
   console.log("AUTO LOGIN STARTED");
+
   try {
-    
     const res = await fetch(API + "/auth", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         username: "qa",
         password: "test"
@@ -145,9 +147,20 @@ async function autoLogin() {
     });
 
     const data = await res.json();
-await loadBooks();
-await loadOrders();
+
+    console.log("AUTH RESPONSE:", data);
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("apiKey", data.apiKey);
+
+    console.log("TOKEN:", localStorage.getItem("token"));
+    console.log("APIKEY:", localStorage.getItem("apiKey"));
+
+    await loadBooks();
+    await loadOrders();
+
   } catch (err) {
+    console.error(err);
     showToast("Login failed", "error");
   }
 }
