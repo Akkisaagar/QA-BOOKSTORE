@@ -4,7 +4,12 @@ const API = "https://qa-bookstore.onrender.com";
 /* ================= BOOKS ================= */
 async function loadBooks() {
   try {
-    const res = await fetch(API + "/books");
+    const res = await fetch(API + "/books", {
+  headers: {
+    "x-api-key": localStorage.getItem("apiKey"),
+    "Authorization": "Bearer " + localStorage.getItem("token")
+  }
+});
     const data = await res.json();
 
     const booksEl = document.getElementById("books");
@@ -140,12 +145,8 @@ async function autoLogin() {
     });
 
     const data = await res.json();
-
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("apiKey", data.apiKey);
-
-    loadBooks();
-    loadOrders();
+await loadBooks();
+await loadOrders();
   } catch (err) {
     showToast("Login failed", "error");
   }

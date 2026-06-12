@@ -15,7 +15,10 @@ app.use(cors({
 app.use(bodyParser.json());
 
 /* ================= DATABASE ================= */
-
+console.log("HOST:", process.env.DB_HOST);
+console.log("USER:", process.env.DB_USER);
+console.log("DB:", process.env.DB_NAME);
+console.log("PORT:", process.env.DB_PORT);
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -196,32 +199,39 @@ app.delete("/orders/:id", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
 });
 
 /* ================= RESET DATABASE ================= */
-
 app.post("/reset", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
- const books = [
-  ["Java", 10, false],
-  ["Manual Testing", 8, false],
-  ["Linux", 6, false],
-  ["Python", 7, false],
-  ["SQL", 5, false]
 
+  const books = [
+    ["Java", 10, 10, false],
+    ["Manual Testing", 8, 8, false],
+    ["Linux", 6, 6, false],
+    ["Python", 7, 7, false],
+    ["SQL", 5, 5, false]
   ];
 
-  db.query("DELETE FROM orders");
-  db.query("DELETE FROM books");
+  db.query("DELETE FROM orders", err => {
+    if (err) return res.status(500).json(err);
 
-  db.query(
-    "INSERT INTO books (name, stock, deleted) VALUES ?",
-    [books],
-    err => {
+    db.query("DELETE FROM books", err => {
       if (err) return res.status(500).json(err);
 
-      logAction("Database reset");
-      res.json({ message: "Database reset successfully" });
-    }
-  );
-});
+      db.query(
+        "INSERT INTO books (name, stock, initialStock, deleted) VALUES ?",
+        [books],
+        err => {
+          if (err) return res.status(500).json(err);
 
+          logAction("Database reset");
+
+          res.json({
+            message: "Database reset successfully"
+          });
+        }
+      );
+    });
+  });
+
+});
 /* ================= AUDIT ================= */
 
 app.get("/audit", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
