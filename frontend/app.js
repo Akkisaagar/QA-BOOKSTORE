@@ -1,8 +1,19 @@
+const token =
+  localStorage.getItem("token");
+
+if (!token) {
+
+  window.location.href =
+    "login.html";
+}
 console.log("APP JS LOADED");
 const API = "https://qa-bookstore.onrender.com";
 
 /* ================= BOOKS ================= */
+
 async function loadBooks() {
+  console.log("BOOKS API KEY:", localStorage.getItem("apiKey"));
+console.log("BOOKS TOKEN:", localStorage.getItem("token"));
   try {
     const res = await fetch(API + "/books", {
   headers: {
@@ -35,7 +46,10 @@ async function loadBooks() {
 }
 
 /* ================= ORDERS ================= */
+
 async function loadOrders() {
+  console.log("ORDERS API KEY:", localStorage.getItem("apiKey"));
+console.log("ORDERS TOKEN:", localStorage.getItem("token"));
   try {
     const res = await fetch(API + "/orders", {
       headers: {
@@ -131,39 +145,186 @@ async function resetDB() {
 }
 
 /* ================= AUTO LOGIN ================= */
-async function autoLogin() {
-  console.log("AUTO LOGIN STARTED");
+async function register() {
 
-  try {
-    const res = await fetch(API + "/auth", {
+  const username =
+    document.getElementById("username").value;
+
+  const email =
+    document.getElementById("email").value;
+
+  const password =
+    document.getElementById("password").value;
+
+  const res = await fetch(
+    API + "/register",
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: "qa",
-        password: "test"
+        username,
+        email,
+        password
       })
-    });
+    }
+  );
+
+ const data = await res.json();
+
+if (!res.ok) {
+  alert(data.message || "Registration failed");
+  return;
+}
+
+alert(data.message);
+
+window.location.href = "login.html";
+async function login() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const password =
+    document.getElementById("password").value;
+
+  const res = await fetch(
+    API + "/login",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    }
+  );
+
+  const data = await res.json();
+
+if (!res.ok) {
+  alert(data.message || "Login failed");
+  return;
+}
+
+localStorage.setItem("token", data.token);
+localStorage.setItem("apiKey", data.apiKey);
+
+window.location.href = "dashboard.html";
+
+ localStorage.setItem(
+  "apiKey",
+  data.apiKey
+);
+
+window.location.href = "dashboard.html";}
+async function getProfile() {
+
+  try {
+
+    const res = await fetch(
+      API + "/profile",
+      {
+        headers: {
+          "x-api-key":
+            localStorage.getItem("apiKey"),
+
+          "Authorization":
+            "Bearer " +
+            localStorage.getItem("token")
+        }
+      }
+    );
 
     const data = await res.json();
 
-    console.log("AUTH RESPONSE:", data);
+    document.getElementById(
+      "profileUsername"
+    ).innerText = data.username;
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("apiKey", data.apiKey);
+    document.getElementById(
+      "profileEmail"
+    ).innerText = data.email;
 
-    console.log("TOKEN:", localStorage.getItem("token"));
-    console.log("APIKEY:", localStorage.getItem("apiKey"));
+    document.getElementById(
+      "profileRole"
+    ).innerText = data.role;
 
-    await loadBooks();
-    await loadOrders();
+    document.getElementById(
+      "profileModal"
+    ).style.display = "block";
 
-  } catch (err) {
-    console.error(err);
-    showToast("Login failed", "error");
+  } catch {
+
+    showToast(
+      "Failed to load profile",
+      "error"
+    );
   }
 }
+function closeProfile() {
 
+  document.getElementById(
+    "profileModal"
+  ).style.display = "none";
+}
+function logout() {
+
+  if (
+    confirm(
+      "Are you sure you want to logout?"
+    )
+  ) {
+
+    localStorage.clear();
+
+    window.location.href =
+      "login.html";
+  }
+}
+async function loadCurrentUser() {
+
+  try {
+
+    const res = await fetch(
+      API + "/profile",
+      {
+        headers: {
+          "x-api-key":
+            localStorage.getItem("apiKey"),
+
+          "Authorization":
+            "Bearer " +
+            localStorage.getItem("token")
+        }
+      }
+    );
+
+    const user =
+      await res.json();
+
+    const welcome =
+      document.getElementById(
+        "welcomeUser"
+      );
+
+    if (welcome) {
+
+      welcome.innerText =
+        `Welcome, ${user.username}`;
+    }
+
+  } catch {}
+}
 /* ================= INIT ================= */
-autoLogin();
+if (document.getElementById("books")) {
+
+  loadCurrentUser();
+
+  loadBooks();
+
+  loadOrders();
+}}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QA BookStore</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="top-bar">
+
+    <div>
+      <h3 id="welcomeUser">Welcome</h3>
+      <h1>📚 QA BookStore</h1>
+      <p>Secure API Testing Web App</p>
+    </div>
+
+    <div>
+      <button onclick="getProfile()">👤 My Profile</button>
+      <button onclick="logout()">🚪 Logout</button>
+    </div>
+
+  </div>
+</header>
+
+<div class="container">
+
+  <section class="card">
+    <h2>Available Books</h2>
+    <div id="books" class="book-list"></div>
+  </section>
+
+  <section class="card">
+    <h2>Order a Book</h2>
+    <input
+      type="number"
+      id="bookId"
+      placeholder="Enter Book ID">
+
+    <button onclick="orderBook()">
+      Order
+    </button>
+
+    <p id="orderStatus"></p>
+  </section>
+
+  <section class="card">
+    <h2>Orders</h2>
+
+    <ul id="orders"></ul>
+
+    <button onclick="resetDB()">
+      Reset Database
+    </button>
+  </section>
+
+</div>
+
+<footer>
+  <p>
+    Built by Akash – Manual & API Testing Portfolio
+  </p>
+</footer>
+
+<div id="toast"></div>
+
+<!-- Profile Modal -->
+
+<div
+  id="profileModal"
+  class="profile-modal"
+  style="display:none;">
+
+  <h2>👤 User Profile</h2>
+
+  <p>
+    <b>Username:</b>
+    <span id="profileUsername"></span>
+  </p>
+
+  <p>
+    <b>Email:</b>
+    <span id="profileEmail"></span>
+  </p>
+
+  <p>
+    <b>Role:</b>
+    <span id="profileRole"></span>
+  </p>
+
+  <button
+    onclick="window.location.href='reset-password.html'">
+    🔐 Change Password
+  </button>
+
+  <button onclick="closeProfile()">
+    Close
+  </button>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QA BookStore Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="login-container">
+
+  <div class="login-card">
+
+    <h1>📚 QA BookStore</h1>
+    <p>Secure API Testing Platform</p>
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email">
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password">
+
+    <button onclick="login()">
+      Login
+    </button>
+
+    <button class="google-btn"
+            onclick="googleLogin()">
+      Continue with Google
+    </button>
+
+    <p>
+      New User?
+      <a href="register.html">
+        Register Here
+      </a>
+    </p>
+
+  </div>
+
+</div>
+
+<script src="login.js"></script>
+
+</body>
+</html>
