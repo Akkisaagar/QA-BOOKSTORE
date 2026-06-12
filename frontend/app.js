@@ -1,3 +1,4 @@
+console.log("APP JS LOADED");
 const API = "https://qa-bookstore.onrender.com";
 
 /* ================= BOOKS ================= */
@@ -127,6 +128,7 @@ async function resetDB() {
 /* ================= AUTO LOGIN ================= */
 async function autoLogin() {
   try {
+    console.log("AUTO LOGIN STARTED");
     const res = await fetch(API + "/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
