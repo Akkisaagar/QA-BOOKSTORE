@@ -1,13 +1,23 @@
+require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
+const bcrypt = require("bcryptjs");
 const app = express();
-
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 app.use(cors({
   origin: [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
     "https://akashjha.site",
     "https://www.akashjha.site"
   ]
@@ -73,26 +83,93 @@ function logAction(action) {
 }
 
 /* ================= AUTH ================= */
+app.post("/login", (req, res) => {
 
-app.post("/auth", (req, res) => {
-  const { username } = req.body;
+  const { email, password } = req.body;
 
-  // default admin user
-  const role = "admin";
+  db.query(
+    "SELECT * FROM users WHERE email=?",
+    [email],
+    async (err, rows) => {
 
-  const token = jwt.sign(
-    { username, role },
-    JWT_SECRET,
-    { expiresIn: "1h" }
+      if (err)
+        return res.status(500).json(err);
+
+      if (rows.length === 0)
+        return res.status(401).json({
+          message: "User not found"
+        });
+
+      const user = rows[0];
+
+      const valid =
+        await bcrypt.compare(
+          password,
+          user.password
+        );
+
+      if (!valid)
+        return res.status(401).json({
+          message: "Invalid password"
+        });
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        },
+        JWT_SECRET,
+        {
+          expiresIn: "1h"
+        }
+      );
+
+      res.json({
+        token,
+        apiKey: API_KEY,
+        role: user.role
+      });
+    }
   );
-
-  res.json({
-    apiKey: API_KEY,
-    token
-  });
 });
+   
+app.post("/register", async (req, res) => {
 
+  const { username, email, password } = req.body;
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  db.query(
+    "INSERT INTO users(username,email,password) VALUES(?,?,?)",
+    [username, email, hashedPassword],
+    err => {
+
+      if (err)
+        return res.status(500).json(err);
+
+      res.json({
+        message: "User registered successfully"
+      });
+    }
+  );
+});
+app.post("/make-admin", (req, res) => {
+
+  db.query(
+    "UPDATE users SET role='admin' WHERE email=?",
+    [req.body.email],
+    err => {
+
+      if (err)
+        return res.status(500).json(err);
+
+      res.json({
+        message: "User promoted to admin"
+      });
+    }
+  );
+});
 /* ================= BOOKS ================= */
 
 // ✅ GET BOOKS (ONLY ACTIVE)
@@ -243,7 +320,44 @@ app.get("/audit", apiKeyAuth, tokenAuth, adminOnly, (req, res) => {
     }
   );
 });
+/* =================profile ================= */
+app.get("/profile", apiKeyAuth, tokenAuth, (req, res) => {
 
+  db.query(
+    "SELECT id, username, email, role, created_at FROM users WHERE id=?",
+    [req.user.id],
+    (err, rows) => {
+
+      if (err)
+        return res.status(500).json(err);
+
+      if (rows.length === 0)
+        return res.status(404).json({
+          message: "User not found"
+        });
+
+      res.json(rows[0]);
+    }
+  );
+});
+app.put("/profile", apiKeyAuth, tokenAuth, (req, res) => {
+
+  const { username } = req.body;
+
+  db.query(
+    "UPDATE users SET username=? WHERE id=?",
+    [username, req.user.id],
+    err => {
+
+      if (err)
+        return res.status(500).json(err);
+
+      res.json({
+        message: "Profile updated"
+      });
+    }
+  );
+});
 /* ================= USER ================= */
 
 app.get("/me", apiKeyAuth, tokenAuth, (req, res) => {
@@ -256,3 +370,127 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+app.get(
+  "/users",
+  apiKeyAuth,
+  tokenAuth,
+  adminOnly,
+  (req, res) => {
+
+    db.query(
+      "SELECT id, username, email, role FROM users",
+      (err, rows) => {
+
+        if (err)
+          return res.status(500).json(err);
+
+        res.json(rows);
+      }
+    );
+  }
+);
+app.delete(
+  "/users/:id",
+  apiKeyAuth,
+  tokenAuth,
+  adminOnly,
+  (req, res) => {
+
+    db.query(
+      "DELETE FROM users WHERE id=?",
+      [req.params.id],
+      err => {
+
+        if (err)
+          return res.status(500).json(err);
+
+        res.json({
+          message: "User deleted successfully"
+        });
+      }
+    );
+  }
+);
+app.post("/forgot-password", (req, res) => {
+
+  const { email } = req.body;
+
+  db.query(
+    "SELECT * FROM users WHERE email=?",
+    [email],
+    async (err, rows) => {
+
+      if (err)
+        return res.status(500).json(err);
+
+      if (rows.length === 0)
+        return res.status(404).json({
+          message: "User not found"
+        });
+
+      const token = jwt.sign(
+        { email },
+        JWT_SECRET,
+        { expiresIn: "15m" }
+      );
+
+      const resetLink =
+        `https://akashjha.site/reset-password.html?token=${token}`;
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "QA BookStore Password Reset",
+        html: `
+          <h2>Password Reset</h2>
+          <p>Click below link:</p>
+          <a href="${resetLink}">
+            Reset Password
+          </a>
+        `
+      });
+
+      res.json({
+        message: "Reset email sent"
+      });
+    }
+  );
+});
+app.post("/reset-password", async (req, res) => {
+
+  const { token, newPassword } = req.body;
+
+  try {
+
+    const decoded =
+      jwt.verify(token, JWT_SECRET);
+
+    const hashedPassword =
+      await bcrypt.hash(newPassword, 10);
+
+    db.query(
+      "UPDATE users SET password=? WHERE email=?",
+      [
+        hashedPassword,
+        decoded.email
+      ],
+      err => {
+
+        if (err)
+          return res.status(500).json(err);
+
+        res.json({
+          message: "Password updated successfully"
+        });
+      }
+    );
+
+  } catch {
+
+    res.status(400).json({
+      message: "Invalid or expired token"
+    });
+  }
+});
+
+
