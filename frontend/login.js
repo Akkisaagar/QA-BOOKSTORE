@@ -65,6 +65,16 @@ async function register() {
       })
     }
   );
+  function togglePassword() {
+
+  const password =
+    document.getElementById("password");
+
+  password.type =
+    password.type === "password"
+      ? "text"
+      : "password";
+}
 
   const data = await res.json();
 

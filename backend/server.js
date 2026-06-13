@@ -1,4 +1,13 @@
 require("dotenv").config();
+const passport =
+require("passport");
+
+const GoogleStrategy =
+require("passport-google-oauth20")
+.Strategy;
+
+const session =
+require("express-session");
 const express = require("express");
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
@@ -22,6 +31,14 @@ app.use(cors({
     "https://www.akashjha.site"
   ]
 }));
+app.use(session({
+  secret:"google-login",
+  resave:false,
+  saveUninitialized:false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(bodyParser.json());
 
 /* ================= DATABASE ================= */
@@ -133,7 +150,89 @@ app.post("/login", (req, res) => {
     }
   );
 });
-   
+   passport.use(
+
+new GoogleStrategy({
+
+  clientID:
+  process.env.GOOGLE_CLIENT_ID,
+
+  clientSecret:
+  process.env.GOOGLE_CLIENT_SECRET,
+
+  callbackURL:
+  "/auth/google/callback"
+
+},
+
+(accessToken,
+refreshToken,
+profile,
+done)=>{
+
+  return done(
+    null,
+    profile
+  );
+
+}));
+
+passport.serializeUser(
+(user,done)=>done(null,user)
+);
+
+passport.deserializeUser(
+(user,done)=>done(null,user)
+);
+app.get(
+  "/auth/google",
+
+  passport.authenticate(
+    "google",
+    {
+      scope:[
+        "profile",
+        "email"
+      ]
+    }
+  )
+);
+app.get(
+"/auth/google/callback",
+
+passport.authenticate(
+"google",
+{
+failureRedirect:
+"/login"
+}
+),
+
+(req,res)=>{
+
+ const token =
+ jwt.sign({
+
+  email:
+  req.user.emails[0].value,
+
+  role:"user"
+
+ },
+
+ JWT_SECRET,
+
+ {
+  expiresIn:"1h"
+ });
+
+ res.redirect(
+
+ `https://akashjha.site/login-success.html?token=${token}`
+
+ );
+
+});
 app.post("/register", async (req, res) => {
 
   const { username, email, password } = req.body;

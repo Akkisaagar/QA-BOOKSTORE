@@ -243,7 +243,33 @@ window.closeProfile = function () {
   document.getElementById("profileModal").style.display =
     "none";
 };
+function googleLogin() {
 
+ window.location.href =
+ API + "/auth/google";
+}
+async function forgotPassword() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const res = await fetch(
+    API + "/forgot-password",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body: JSON.stringify({ email })
+    }
+  );
+
+  const data =
+    await res.json();
+
+  alert(data.message);
+}
 window.logout = function () {
 
   if (confirm("Are you sure you want to logout?")) {

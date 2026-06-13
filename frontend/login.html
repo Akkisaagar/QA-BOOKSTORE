@@ -19,11 +19,27 @@
       id="email"
       placeholder="Email">
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password">
+    <div class="password-wrapper">
+  <input
+    type="password"
+    id="password"
+    placeholder="Password">
 
+  <span onclick="togglePassword()">
+    👁️
+  </span>
+</div>
+<a href="forgot-password.html">
+  Forgot Password?
+</a>
+<input
+  type="email"
+  id="email"
+  placeholder="Enter Email">
+
+<button onclick="forgotPassword()">
+  Send Reset Link
+</button>
     <button onclick="login()">
       Login
     </button>
