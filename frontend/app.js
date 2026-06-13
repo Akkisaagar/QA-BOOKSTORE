@@ -1,10 +1,14 @@
 const token =
   localStorage.getItem("token");
 
-if (!token) {
+const currentPage =
+  window.location.pathname;
 
-  window.location.href =
-    "login.html";
+if (
+  currentPage.includes("dashboard") &&
+  !localStorage.getItem("token")
+) {
+  window.location.href = "login.html";
 }
 console.log("APP JS LOADED");
 const API = "https://qa-bookstore.onrender.com";
@@ -147,144 +151,108 @@ async function resetDB() {
 /* ================= AUTO LOGIN ================= */
 async function register() {
 
-  const username =
-    document.getElementById("username").value;
+  const username = document.getElementById("username").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  const email =
-    document.getElementById("email").value;
-
-  const password =
-    document.getElementById("password").value;
-
-  const res = await fetch(
-    API + "/register",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password
-      })
-    }
-  );
-
- const data = await res.json();
-
-if (!res.ok) {
-  alert(data.message || "Registration failed");
-  return;
-}
-
-alert(data.message);
-
-window.location.href = "login.html";
-async function login() {
-
-  const email =
-    document.getElementById("email").value;
-
-  const password =
-    document.getElementById("password").value;
-
-  const res = await fetch(
-    API + "/login",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email,
-        password
-      })
-    }
-  );
+  const res = await fetch(API + "/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      email,
+      password
+    })
+  });
 
   const data = await res.json();
 
-if (!res.ok) {
-  alert(data.message || "Login failed");
-  return;
+  if (!res.ok) {
+    alert(data.message || "Registration failed");
+    return;
+  }
+
+  alert(data.message);
+  window.location.href = "login.html";
 }
 
-localStorage.setItem("token", data.token);
-localStorage.setItem("apiKey", data.apiKey);
+async function login() {
 
-window.location.href = "dashboard.html";
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
- localStorage.setItem(
-  "apiKey",
-  data.apiKey
-);
+  const res = await fetch(API + "/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email,
+      password
+    })
+  });
 
-window.location.href = "dashboard.html";}
-async function getProfile() {
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.message || "Login failed");
+    return;
+  }
+
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("apiKey", data.apiKey);
+
+  window.location.href = "dashboard.html";
+}
+
+window.getProfile = async function () {
 
   try {
 
-    const res = await fetch(
-      API + "/profile",
-      {
-        headers: {
-          "x-api-key":
-            localStorage.getItem("apiKey"),
-
-          "Authorization":
-            "Bearer " +
-            localStorage.getItem("token")
-        }
+    const res = await fetch(API + "/profile", {
+      headers: {
+        "x-api-key": localStorage.getItem("apiKey"),
+        "Authorization":
+          "Bearer " + localStorage.getItem("token")
       }
-    );
+    });
 
     const data = await res.json();
 
-    document.getElementById(
-      "profileUsername"
-    ).innerText = data.username;
+    document.getElementById("profileUsername").innerText =
+      data.username;
 
-    document.getElementById(
-      "profileEmail"
-    ).innerText = data.email;
+    document.getElementById("profileEmail").innerText =
+      data.email;
 
-    document.getElementById(
-      "profileRole"
-    ).innerText = data.role;
+    document.getElementById("profileRole").innerText =
+      data.role;
 
-    document.getElementById(
-      "profileModal"
-    ).style.display = "block";
+    document.getElementById("profileModal").style.display =
+      "block";
 
-  } catch {
-
-    showToast(
-      "Failed to load profile",
-      "error"
-    );
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to load profile", "error");
   }
-}
-function closeProfile() {
+};
 
-  document.getElementById(
-    "profileModal"
-  ).style.display = "none";
-}
-function logout() {
+window.closeProfile = function () {
+  document.getElementById("profileModal").style.display =
+    "none";
+};
 
-  if (
-    confirm(
-      "Are you sure you want to logout?"
-    )
-  ) {
+window.logout = function () {
+
+  if (confirm("Are you sure you want to logout?")) {
 
     localStorage.clear();
 
-    window.location.href =
-      "login.html";
+    window.location.href = "login.html";
   }
-}
+};
 async function loadCurrentUser() {
 
   try {
@@ -327,4 +295,4 @@ if (document.getElementById("books")) {
   loadBooks();
 
   loadOrders();
-}}
+}
