@@ -263,8 +263,9 @@ function googleLogin() {
  window.location.href =
  API + "/auth/google";
 }
-async function forgotPassword() {
 
+async function forgotPassword() {
+  console.log("Forgot password clicked");
   const email =
     document.getElementById("email").value;
 
