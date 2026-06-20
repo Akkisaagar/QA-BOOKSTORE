@@ -230,11 +230,9 @@ failureRedirect:
   expiresIn:"1h"
  });
 
- res.redirect(
-
- `https://akashjha.site/login-success.html?token=${token}`
-
- );
+res.redirect(
+  `https://akashjha.site/dashboard.html?token=${token}`
+);
 
 });
 app.post("/register", async (req, res) => {
