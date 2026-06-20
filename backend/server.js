@@ -133,15 +133,15 @@ app.post("/login", (req, res) => {
         });
 
       const token = jwt.sign(
-  {
-    id: req.user.id,
-    email: req.user.email,
-    role: req.user.role
-  },
-  JWT_SECRET,
-  {
-    expiresIn: "1h"
-  }
+{
+  id: user.id,
+  email: user.email,
+  role: user.role
+},
+JWT_SECRET,
+{
+  expiresIn: "1h"
+}
 );
 
       res.json({
@@ -177,16 +177,18 @@ console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
           if (rows.length > 0) {
             return done(null, rows[0]);
           }
+db.query(
+`INSERT INTO users
+(username,email,password,role,provider)
+VALUES (?,?,?,?,?)`,
+[
+  username,
+  email,
+  "GOOGLE_LOGIN",
+  "user",
+  "google"
+],
 
-          db.query(
-            "INSERT INTO users(username,email,password,role) VALUES(?,?,?,?)",
-            [
-              username,
-              email,
-              "GOOGLE_LOGIN",
-              "user",
-              "google"
-            ],
             (err) => {
 
               if (err) return done(err);
@@ -251,8 +253,7 @@ app.get(
         "email"
       ]
     }
-  )
-  ,
+  ))
 app.get(
   "/auth/google/callback",
 
@@ -283,7 +284,7 @@ const token = jwt.sign(
       `https://akashjha.site/dashboard.html?token=${token}`
     );
   }
-));
+);
 
 
 app.post("/register", async (req, res) => {
