@@ -9,6 +9,7 @@ require("passport-google-oauth20")
 const session =
 require("express-session");
 const express = require("express");
+app.set("trust proxy", 1);
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
@@ -150,6 +151,8 @@ app.post("/login", (req, res) => {
     }
   );
 });
+console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
    passport.use(
 
 new GoogleStrategy({
@@ -161,7 +164,7 @@ new GoogleStrategy({
   process.env.GOOGLE_CLIENT_SECRET,
 
   callbackURL:
-  "/auth/google/callback"
+  "https://qa-bookstore.onrender.com/auth/google/callback"
 
 },
 
