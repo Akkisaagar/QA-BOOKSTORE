@@ -564,50 +564,61 @@ app.delete(
     );
   }
 );
-app.post("/forgot-password", (req, res) => {
+app.post("/forgot-password", async (req, res) => {
+  try {
 
-  const { email } = req.body;
+    const { email } = req.body;
 
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
-    async (err, rows) => {
+    db.query(
+      "SELECT * FROM users WHERE email=?",
+      [email],
+      async (err, rows) => {
 
-      if (err)
-        return res.status(500).json(err);
+        if (err)
+          return res.status(500).json(err);
 
-      if (rows.length === 0)
-        return res.status(404).json({
-          message: "User not found"
+        if (rows.length === 0)
+          return res.status(404).json({
+            message: "User not found"
+          });
+
+        const token = jwt.sign(
+          { email },
+          JWT_SECRET,
+          { expiresIn: "15m" }
+        );
+
+        const resetLink =
+          `https://akashjha.site/reset-password.html?token=${token}`;
+
+        console.log("Sending email to:", email);
+
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "QA BookStore Password Reset",
+          html: `
+            <h2>Password Reset</h2>
+            <a href="${resetLink}">
+              Reset Password
+            </a>
+          `
         });
 
-      const token = jwt.sign(
-        { email },
-        JWT_SECRET,
-        { expiresIn: "15m" }
-      );
+        res.json({
+          message: "Reset email sent"
+        });
+      }
+    );
 
-      const resetLink =
-        `https://akashjha.site/reset-password.html?token=${token}`;
+  } catch (err) {
 
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "QA BookStore Password Reset",
-        html: `
-          <h2>Password Reset</h2>
-          <p>Click below link:</p>
-          <a href="${resetLink}">
-            Reset Password
-          </a>
-        `
-      });
+    console.error("EMAIL ERROR:", err);
 
-      res.json({
-        message: "Reset email sent"
-      });
-    }
-  );
+    res.status(500).json({
+      message: err.message
+    });
+  }
 });
 app.post("/reset-password", async (req, res) => {
 
