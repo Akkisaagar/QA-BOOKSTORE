@@ -9,13 +9,14 @@ require("passport-google-oauth20")
 const session =
 require("express-session");
 const express = require("express");
+const app = express();
 app.set("trust proxy", 1);
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const app = express();
+
 const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   service: "gmail",
