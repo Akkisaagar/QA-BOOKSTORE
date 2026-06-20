@@ -1,3 +1,18 @@
+const urlToken =
+  new URLSearchParams(window.location.search)
+    .get("token");
+
+if (urlToken) {
+  localStorage.setItem("token", urlToken);
+  localStorage.setItem("apiKey", "Akki@123");
+
+  // Optional: clean URL
+  window.history.replaceState(
+    {},
+    document.title,
+    window.location.pathname
+  );
+}
 const token =
   localStorage.getItem("token");
 
