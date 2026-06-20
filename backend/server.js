@@ -263,20 +263,20 @@ app.get(
   ),
 
   (req, res) => {
-
+console.log("USER:", req.user);
     console.log("✅ Google login success");
     console.log(req.user);
-
-    const token = jwt.sign(
-      {
-        email: req.user.emails[0].value,
-        role: "user"
-      },
-      JWT_SECRET,
-      {
-        expiresIn: "1h"
-      }
-    );
+const token = jwt.sign(
+  {
+    id: req.user.id,
+    email: req.user.email,
+    role: req.user.role
+  },
+  JWT_SECRET,
+  {
+    expiresIn: "1h"
+  }
+);
 
     res.redirect(
       `https://akashjha.site/dashboard.html?token=${token}`
