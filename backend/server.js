@@ -184,7 +184,8 @@ console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
               username,
               email,
               "GOOGLE_LOGIN",
-              "user"
+              "user",
+              "google"
             ],
             (err) => {
 
