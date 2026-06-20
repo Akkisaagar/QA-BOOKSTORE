@@ -264,8 +264,8 @@ function googleLogin() {
  API + "/auth/google";
 }
 
-async function forgotPassword() {
-  console.log("Forgot password clicked");
+window.forgotPassword = async function () {
+
   const email =
     document.getElementById("email").value;
 
@@ -274,18 +274,16 @@ async function forgotPassword() {
     {
       method: "POST",
       headers: {
-        "Content-Type":
-          "application/json"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ email })
     }
   );
 
-  const data =
-    await res.json();
+  const data = await res.json();
 
   alert(data.message);
-}
+};
 window.logout = function () {
 
   if (confirm("Are you sure you want to logout?")) {
