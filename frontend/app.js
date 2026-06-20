@@ -1,3 +1,7 @@
+console.log("APP JS LOADED");
+window.forgotPassword = function() {
+  alert("Function reached");
+};
 const urlToken =
   new URLSearchParams(window.location.search)
     .get("token");
@@ -284,6 +288,7 @@ window.forgotPassword = async function () {
 
   alert(data.message);
 };
+
 window.logout = function () {
 
   if (confirm("Are you sure you want to logout?")) {
