@@ -207,7 +207,31 @@ console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
     }
   )
 );
+app.get(
+  "/google-users",
+  apiKeyAuth,
+  tokenAuth,
+  adminOnly,
+  (req, res) => {
 
+    db.query(
+      `SELECT id,
+              username,
+              email,
+              role,
+              created_at
+       FROM users
+       WHERE provider='google'`,
+      (err, rows) => {
+
+        if (err)
+          return res.status(500).json(err);
+
+        res.json(rows);
+      }
+    );
+  }
+);
 passport.serializeUser(
 (user,done)=>done(null,user)
 );
