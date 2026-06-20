@@ -133,16 +133,16 @@ app.post("/login", (req, res) => {
         });
 
       const token = jwt.sign(
-        {
-          id: user.id,
-          email: user.email,
-          role: user.role
-        },
-        JWT_SECRET,
-        {
-          expiresIn: "1h"
-        }
-      );
+  {
+    id: req.user.id,
+    email: req.user.email,
+    role: req.user.role
+  },
+  JWT_SECRET,
+  {
+    expiresIn: "1h"
+  }
+);
 
       res.json({
         token,
@@ -155,31 +155,58 @@ app.post("/login", (req, res) => {
 console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
 console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
    passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL:
+        "https://qa-bookstore.onrender.com/auth/google/callback"
+    },
+    (accessToken, refreshToken, profile, done) => {
 
-new GoogleStrategy({
+      const email = profile.emails[0].value;
+      const username = profile.displayName;
 
-  clientID:
-  process.env.GOOGLE_CLIENT_ID,
+      db.query(
+        "SELECT * FROM users WHERE email=?",
+        [email],
+        (err, rows) => {
 
-  clientSecret:
-  process.env.GOOGLE_CLIENT_SECRET,
+          if (err) return done(err);
 
-  callbackURL:
-  "https://qa-bookstore.onrender.com/auth/google/callback"
+          if (rows.length > 0) {
+            return done(null, rows[0]);
+          }
 
-},
+          db.query(
+            "INSERT INTO users(username,email,password,role) VALUES(?,?,?,?)",
+            [
+              username,
+              email,
+              "GOOGLE_LOGIN",
+              "user"
+            ],
+            (err) => {
 
-(accessToken,
-refreshToken,
-profile,
-done)=>{
+              if (err) return done(err);
 
-  return done(
-    null,
-    profile
-  );
+              db.query(
+                "SELECT * FROM users WHERE email=?",
+                [email],
+                (err, newRows) => {
 
-}));
+                  if (err) return done(err);
+
+                  return done(null, newRows[0]);
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  )
+);
 
 passport.serializeUser(
 (user,done)=>done(null,user)
