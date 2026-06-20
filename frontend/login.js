@@ -65,16 +65,7 @@ async function register() {
       })
     }
   );
-  function togglePassword() {
-
-  const pwd =
-    document.getElementById("password");
-
-  pwd.type =
-    pwd.type === "password"
-      ? "text"
-      : "password";
-}
+  
 
   const data = await res.json();
 
@@ -84,7 +75,16 @@ async function register() {
     "login.html";
 }
 
+function togglePassword() {
 
+  const pwd =
+    document.getElementById("password");
+
+  pwd.type =
+    pwd.type === "password"
+      ? "text"
+      : "password";
+}
 function googleLogin() {
 
   window.location.href =
