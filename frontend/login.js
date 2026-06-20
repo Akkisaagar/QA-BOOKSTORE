@@ -67,11 +67,11 @@ async function register() {
   );
   function togglePassword() {
 
-  const password =
+  const pwd =
     document.getElementById("password");
 
-  password.type =
-    password.type === "password"
+  pwd.type =
+    pwd.type === "password"
       ? "text"
       : "password";
 }
@@ -83,6 +83,7 @@ async function register() {
   window.location.href =
     "login.html";
 }
+
 
 function googleLogin() {
 

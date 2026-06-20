@@ -11,49 +11,59 @@
 
   <div class="login-card">
 
-    <h1>📚 QA BookStore</h1>
-    <p>Secure API Testing Platform</p>
+    <div style="text-align:center; margin-bottom:30px;">
+      <h1>📚 QA BookStore</h1>
+      <p>Secure API Testing Platform</p>
+    </div>
 
     <input
       type="email"
       id="email"
-      placeholder="Email">
+      placeholder="Email Address">
 
     <div class="password-wrapper">
-  <input
-    type="password"
-    id="password"
-    placeholder="Password">
 
-  <span onclick="togglePassword()">
-    👁️
-  </span>
-</div>
-<a href="forgot-password.html">
-  Forgot Password?
-</a>
-<input
-  type="email"
-  id="email"
-  placeholder="Enter Email">
+      <input
+        type="password"
+        id="password"
+        placeholder="Password">
 
-<button onclick="forgotPassword()">
-  Send Reset Link
-</button>
+      <span onclick="togglePassword()">
+        👁️
+      </span>
+
+    </div>
+
+    <p class="forgot-link">
+      <a href="forgot-password.html">
+        Forgot Password?
+      </a>
+    </p>
+
     <button onclick="login()">
       Login
     </button>
 
-    <button class="google-btn"
-            onclick="googleLogin()">
+    <div class="divider">
+      <span>OR</span>
+    </div>
+
+    <button
+      class="google-btn"
+      onclick="googleLogin()">
+
       Continue with Google
+
     </button>
 
-    <p>
+    <p style="text-align:center;margin-top:20px;">
+
       New User?
+
       <a href="register.html">
         Register Here
       </a>
+
     </p>
 
   </div>
