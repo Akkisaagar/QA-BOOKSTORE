@@ -200,41 +200,40 @@ app.get(
       ]
     }
   )
-);
+  ,
 app.get(
-"/auth/google/callback",
+  "/auth/google/callback",
 
-passport.authenticate(
-"google",
-{
-failureRedirect:
-"/login"
-}
-),
+  passport.authenticate(
+    "google",
+    {
+      failureRedirect: "/login"
+    }
+  ),
 
-(req,res)=>{
+  (req, res) => {
 
- const token =
- jwt.sign({
+    console.log("✅ Google login success");
+    console.log(req.user);
 
-  email:
-  req.user.emails[0].value,
+    const token = jwt.sign(
+      {
+        email: req.user.emails[0].value,
+        role: "user"
+      },
+      JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
 
-  role:"user"
+    res.redirect(
+      `https://akashjha.site/dashboard.html?token=${token}`
+    );
+  }
+));
 
- },
 
- JWT_SECRET,
-
- {
-  expiresIn:"1h"
- });
-
-res.redirect(
-  `https://akashjha.site/dashboard.html?token=${token}`
-);
-
-});
 app.post("/register", async (req, res) => {
 
   const { username, email, password } = req.body;
